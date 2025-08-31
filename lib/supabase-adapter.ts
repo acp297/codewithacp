@@ -3,7 +3,7 @@ import { supabaseAdmin } from './supabase'
 
 export function SupabaseAdapter(): Adapter {
   return {
-    async createUser(user) {
+    async createUser(user: AdapterUser) {
       const { data, error } = await supabaseAdmin
         .from('User')
         .insert({
@@ -55,7 +55,7 @@ export function SupabaseAdapter(): Adapter {
       return data.user as AdapterUser
     },
 
-    async updateUser(user) {
+    async updateUser(user: Partial<AdapterUser> & { id: string }) {
       const { data, error } = await supabaseAdmin
         .from('User')
         .update({
@@ -80,7 +80,7 @@ export function SupabaseAdapter(): Adapter {
       if (error) throw error
     },
 
-    async linkAccount(account) {
+    async linkAccount(account: AdapterAccount) {
       const { error } = await supabaseAdmin
         .from('Account')
         .insert({
@@ -100,7 +100,7 @@ export function SupabaseAdapter(): Adapter {
       if (error) throw error
     },
 
-    async unlinkAccount({ provider, providerAccountId }) {
+    async unlinkAccount({ provider, providerAccountId }: { provider: string; providerAccountId: string }) {
       const { error } = await supabaseAdmin
         .from('Account')
         .delete()
@@ -110,7 +110,7 @@ export function SupabaseAdapter(): Adapter {
       if (error) throw error
     },
 
-    async createSession(session) {
+    async createSession(session: AdapterSession) {
       const { data, error } = await supabaseAdmin
         .from('Session')
         .insert({
@@ -135,14 +135,14 @@ export function SupabaseAdapter(): Adapter {
         .eq('sessionToken', sessionToken)
         .single()
 
-      if (error) return { session: null, user: null }
+      if (error) return null
       return {
         session: data as AdapterSession,
         user: data.user as AdapterUser,
       }
     },
 
-    async updateSession(session) {
+    async updateSession(session: Partial<AdapterSession> & { sessionToken: string }) {
       const { data, error } = await supabaseAdmin
         .from('Session')
         .update({
@@ -165,16 +165,19 @@ export function SupabaseAdapter(): Adapter {
       if (error) throw error
     },
 
-    async createVerificationToken(verificationToken) {
-      const { error } = await supabaseAdmin
+    async createVerificationToken(verificationToken: { identifier: string; token: string; expires: Date }) {
+      const { data, error } = await supabaseAdmin
         .from('VerificationToken')
         .insert({
           identifier: verificationToken.identifier,
           token: verificationToken.token,
           expires: verificationToken.expires,
         })
+        .select()
+        .single()
 
       if (error) throw error
+      return data
     },
 
     async useVerificationToken({ identifier, token }) {

@@ -4,6 +4,28 @@ import FacebookProvider from 'next-auth/providers/facebook'
 import GitHubProvider from 'next-auth/providers/github'
 import { SupabaseAdapter } from '@/lib/supabase-adapter'
 
+// Extend the built-in session types
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+    }
+  }
+  
+  interface User {
+    id: string
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    uid: string
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   adapter: SupabaseAdapter(),
   providers: [
@@ -36,7 +58,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
   session: {
     strategy: 'jwt',

@@ -170,7 +170,7 @@ model Payment {
   currency      String   @default("USD")
   status        PaymentStatus @default(PENDING)
   paymentMethod PaymentMethod
-  stripePaymentIntentId String?
+  stripePaymentIntentId String? @unique
   courseId      String?
   planId        String?
   createdAt     DateTime @default(now())
